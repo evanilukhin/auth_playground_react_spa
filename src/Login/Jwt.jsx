@@ -10,7 +10,8 @@ export default class Jwt extends Component {
 
     this.state = {
       login: "",
-      password: ""
+      password: "",
+      name: null
     };
   }
 
@@ -49,36 +50,42 @@ export default class Jwt extends Component {
       credentials: 'include'
     })
     .then(function (response) {
-      console.log(response);
-      localStorage.setItem('jwt', response.data['jwt'])
+      return response.json();
+    })
+    .then(function(myJson) {
+      localStorage.setItem('jwt', myJson['jwt']);
     });
   }
 
   render() {
-    let username_url = apiUrl + "username";
-    let headers = {
+    let username_url = apiUrl + "name";
+    let headers = new Headers({
       'Content-Type': 'application/json',
       'Authorization': 'Bearer ' + localStorage.getItem('jwt')
-    };
-
-    let name;
-
-    fetch(username_url, {
-      method: 'GET',
-      mode: 'cors',
-      cache: 'no-cache',
-      redirect: 'follow',
-      referrer: 'no-referrer',
-      credentials: 'include'
-    })
-    .then(function (response) {
-      name = response.body['name']
-      console.log(response);
     });
+
+    if(this.state.name === null) {
+      fetch(username_url, {
+        method: 'GET',
+        mode: 'cors',
+        headers: headers,
+        cache: 'no-cache',
+        redirect: 'follow',
+        referrer: 'no-referrer',
+        credentials: 'include'
+      })
+      .then(function (response) {
+        return response.json();
+      })
+      .then(myJson => {
+        this.setState({name: myJson['name']});
+      });
+    };
 
     return (
       <div className="Login">
         Jwt
+        <p> Your name: {this.state.name}</p>
         <form onSubmit={this.handleSubmit}>
           <FormGroup controlId="login">
             <FormLabel>Login</FormLabel>
@@ -98,7 +105,6 @@ export default class Jwt extends Component {
           </FormGroup>
           <Button
             block
-            bsSize="large"
             disabled={!this.validateForm()}
             type="submit"
           >

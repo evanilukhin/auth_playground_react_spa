@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { Button, FormGroup, FormControl, FormLabel } from "react-bootstrap";
 import "./Cookie.css";
-import axios from 'axios';
 const apiUrl = 'http://localhost:3001/api/cookie/'
 export default class Login extends Component {
   constructor(props) {
@@ -9,7 +8,8 @@ export default class Login extends Component {
 
     this.state = {
       login: "",
-      password: ""
+      password: "",
+      name: null
     };
   }
 
@@ -46,31 +46,40 @@ export default class Login extends Component {
       referrer: 'no-referrer',
       body: JSON.stringify(payload),
       credentials: 'include'
-    })
-    .then(function (response) {
-      console.log(response);
     });
   }
 
   render() {
-    let username_url = apiUrl + "username";
-    let name;
-    fetch(username_url, {
-      method: 'GET',
-      mode: 'cors',
-      cache: 'no-cache',
-      redirect: 'follow',
-      referrer: 'no-referrer',
-      credentials: 'include'
-    })
-    .then(function (response) {
-      name = response.body['name']
+    let username_url = apiUrl + "name";
+
+    let headers = new Headers({
+      'Content-Type': 'application/json'
     });
+
+    if(this.state.name === null) {
+      fetch(username_url, {
+        method: 'GET',
+        mode: 'cors',
+        headers: headers,
+        cache: 'no-cache',
+        redirect: 'follow',
+        referrer: 'no-referrer',
+        credentials: 'include'
+      })
+      .then(function (response) {
+        return response.json();
+      })
+      .then(myJson => {
+        this.setState({name: myJson['name']});
+      });
+    };
+
     return (
       <div className="Login">
         Cookie
+        <p> Your name: {this.state.name}</p>
         <form onSubmit={this.handleSubmit}>
-          <FormGroup controlId="login" bsSize="large">
+          <FormGroup controlId="login">
             <FormLabel>Login</FormLabel>
             <FormControl
               autoFocus
@@ -78,7 +87,7 @@ export default class Login extends Component {
               onChange={this.handleChange}
             />
           </FormGroup>
-          <FormGroup controlId="password" bsSize="large">
+          <FormGroup controlId="password">
             <FormLabel>Password</FormLabel>
             <FormControl
               value={this.state.password}
@@ -88,7 +97,6 @@ export default class Login extends Component {
           </FormGroup>
           <Button
             block
-            bsSize="large"
             disabled={!this.validateForm()}
             type="submit"
           >

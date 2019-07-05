@@ -10,7 +10,8 @@ export default class JwtCookies extends Component {
 
     this.state = {
       login: "",
-      password: ""
+      password: "",
+      name: null
     };
   }
 
@@ -48,29 +49,37 @@ export default class JwtCookies extends Component {
       referrer: 'no-referrer',
       body: JSON.stringify(payload),
       credentials: 'include'
-    })
-    .then(function (response) {
-      console.log(response);
     });
   }
 
   render() {
-    let username_url = apiUrl + "username";
-    fetch(username_url, {
-      method: 'GET',
-      mode: 'cors',
-      cache: 'no-cache',
-      redirect: 'follow',
-      referrer: 'no-referrer',
-      credentials: 'include'
-    })
-    .then(function (response) {
-      console.log(response);
+    let username_url = apiUrl + "name";
+    let headers = new Headers({
+      'Content-Type': 'application/json'
     });
+
+    if(this.state.name === null) {
+      fetch(username_url, {
+        method: 'GET',
+        mode: 'cors',
+        headers: headers,
+        cache: 'no-cache',
+        redirect: 'follow',
+        referrer: 'no-referrer',
+        credentials: 'include'
+      })
+      .then(function (response) {
+        return response.json();
+      })
+      .then(myJson => {
+        this.setState({name: myJson['name']});
+      });
+    };
 
     return (
       <div className="Login">
         Jwt Cookies
+        <p> Your name: {this.state.name}</p>
         <form onSubmit={this.handleSubmit}>
           <FormGroup controlId="login">
             <FormLabel>Login</FormLabel>
@@ -90,7 +99,6 @@ export default class JwtCookies extends Component {
           </FormGroup>
           <Button
             block
-            bsSize="large"
             disabled={!this.validateForm()}
             type="submit"
           >
